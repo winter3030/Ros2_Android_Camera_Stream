@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Ros2VideoStream</string>
+    <string name="text_button">Text</string>
+    <string name="camera_button">Camera</string>
+    <string name="start">start</string>
+    <string name="stop">stop</string>
+</resources>
