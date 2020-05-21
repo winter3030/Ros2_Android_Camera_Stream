@@ -6,4 +6,5 @@
     <string name="stop">stop</string>toolbar_title
     <string name="toolbar_title">Ros2Stream</string>
     <string name="toolbar_menu">setting</string>
+    <string name="camera_capture">camera capture</string>
 </resources>
