@@ -50,7 +50,6 @@ public class CameraxFragment extends Fragment {
     private ImageCapture imageCapture;
     private ConstraintLayout container;
     private View controls;
-    private String outputDirectory = "/storage/emulated/0/DCIM/camerax/";
     private String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private ExecutorService cameraExecutor;
     private Handler handler;
@@ -155,7 +154,7 @@ public class CameraxFragment extends Fragment {
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build();
         //TODO bind imageAnalysis
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview,imageCapture);
+        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
         preview.setSurfaceProvider(previewView.createSurfaceProvider(camera.getCameraInfo()));
     }
 

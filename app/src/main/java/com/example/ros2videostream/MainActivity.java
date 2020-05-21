@@ -2,12 +2,17 @@ package com.example.ros2videostream;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import org.ros2.android.activity.ROSActivity;
 import org.ros2.rcljava.RCLJava;
@@ -17,7 +22,9 @@ public class MainActivity extends ROSActivity {
     private FragmentManager manager=getSupportFragmentManager();
     private MainFragment mainFragment;
     private TextFragment textFragment;
+    private CameraxFragment cameraxFragment;
     private FrameLayout container;
+    private int REQUEST_CODE_PERMISSIONS = 10;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,4 +73,40 @@ public class MainActivity extends ROSActivity {
         manager.beginTransaction().addToBackStack("M_to_T").replace(R.id.fragment_container,textFragment,"TFragment").commit();
     }
 
+    public void show_fragment_camerax(){
+        //相機權限
+        if(checkpermission()){
+            //fragment
+            setup_camerax_fragment();
+        }
+        else{
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA},REQUEST_CODE_PERMISSIONS);
+        }
+
+    }
+
+    private boolean checkpermission(){
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    //允許或拒絕後的動作
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==REQUEST_CODE_PERMISSIONS){
+            if(checkpermission()){
+                //fragment
+                setup_camerax_fragment();
+            }
+            else{
+                Toast.makeText(this, "Permissions denied!!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void setup_camerax_fragment() {
+        Log.d(logtag, "now show fragment_camerax");
+        cameraxFragment = new CameraxFragment();
+        manager.beginTransaction().addToBackStack("M_to_C").replace(R.id.fragment_container, cameraxFragment, "CFragment").commit();
+    }
 }

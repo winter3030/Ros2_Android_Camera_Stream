@@ -47,6 +47,12 @@ public class MainFragment extends Fragment {
             }
         });
         camera=view.findViewById(R.id.camera);
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity) requireActivity()).show_fragment_camerax();
+            }
+        });
     }
 
     @Override
