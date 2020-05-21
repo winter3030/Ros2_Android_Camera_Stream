@@ -55,6 +55,11 @@ public class MainActivity extends ROSActivity {
         },500L);
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     public void show_fragment_text(){
         Log.d(logtag,"now show fragment_text");
         textFragment =new TextFragment();

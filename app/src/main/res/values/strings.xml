@@ -3,5 +3,7 @@
     <string name="text_button">Text</string>
     <string name="camera_button">Camera</string>
     <string name="start">start</string>
-    <string name="stop">stop</string>
+    <string name="stop">stop</string>toolbar_title
+    <string name="toolbar_title">Ros2Stream</string>
+    <string name="toolbar_menu">setting</string>
 </resources>

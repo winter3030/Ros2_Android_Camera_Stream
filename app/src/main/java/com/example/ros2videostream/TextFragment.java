@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 public class TextFragment extends Fragment {
@@ -46,6 +48,16 @@ public class TextFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Toolbar toolbar =view.findViewById(R.id.toolbar_text);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        toolbar.setTitle(R.string.toolbar_title);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().onBackPressed();
+            }
+        });
         if (savedInstanceState != null) {
             Log.d("savedInstanceState","load isWorking");
             isWorking = savedInstanceState.getBoolean("isWorking");
@@ -79,14 +91,18 @@ public class TextFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        changeState(isWorking);
+        if(isWorking){
+            changeState(true);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        talkerNode.stop();
-        ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
+        if(isWorking){
+            talkerNode.stop();
+            ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
+        }
     }
 
     private void changeState(boolean isWorking) {
