@@ -17,6 +17,8 @@ import android.widget.Toast;
 import org.ros2.android.activity.ROSActivity;
 import org.ros2.rcljava.RCLJava;
 
+import java.io.File;
+
 public class MainActivity extends ROSActivity {
     private static String logtag = MainActivity.class.getName();
     private FragmentManager manager=getSupportFragmentManager();
@@ -43,6 +45,15 @@ public class MainActivity extends ROSActivity {
         }
         //RCLJava
         RCLJava.rclJavaInit();
+        setupStorageDir();
+    }
+
+    public void setupStorageDir() {
+        ///storage/emulated/0/Android/media/com.example.cameraxapp
+        File file = new File(this.getExternalMediaDirs()[0], "Picture");
+        if(!file.mkdirs()) {
+            Log.d(logtag, "directory not created");
+        }
     }
 
     @Override

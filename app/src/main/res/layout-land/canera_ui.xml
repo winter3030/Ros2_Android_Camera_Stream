@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageButton
-        android:id="@+id/camera_capture_button"
+        android:id="@+id/camera_stream_button"
         android:layout_width="92dp"
         android:layout_height="92dp"
         android:layout_marginEnd="80dp"

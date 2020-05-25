@@ -63,7 +63,7 @@ public class TextFragment extends Fragment {
             isWorking = savedInstanceState.getBoolean("isWorking");
         }
         if(talkerNode==null){
-            talkerNode = new Ros2Node("android_talker_node", "chatter");
+            talkerNode = new Ros2Node("android_talker_node", "chatter",1);
             Log.d("talkerNode","new talkerNode");
         }
         start=view.findViewById(R.id.start);

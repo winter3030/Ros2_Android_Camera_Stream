@@ -2,6 +2,8 @@ package com.example.ros2videostream;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.ImageFormat;
+import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +23,7 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
@@ -30,6 +34,8 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.File;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +59,9 @@ public class CameraxFragment extends Fragment {
     private String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private ExecutorService cameraExecutor;
     private Handler handler;
+    private Ros2Node talkerNode;
+    private boolean isWorking=false;
+    private int count=1;
 
     @Nullable
     @Override
@@ -66,6 +75,12 @@ public class CameraxFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("isWorking", isWorking);
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         container=view.findViewById(R.id.container);
@@ -73,6 +88,14 @@ public class CameraxFragment extends Fragment {
         //background executor
         cameraExecutor= Executors.newSingleThreadExecutor();
         handler = new Handler();
+        if (savedInstanceState != null) {
+            Log.d("savedInstanceState","load isWorking");
+            isWorking = savedInstanceState.getBoolean("isWorking");
+        }
+        if(talkerNode==null){
+            talkerNode = new Ros2Node("android_talker_node", "chatter",2);
+            Log.d("talkerNode","new talkerNode");
+        }
         displayManager.registerDisplayListener(displayListener, null);
         previewView.post(new Runnable() {
             @Override
@@ -85,6 +108,14 @@ public class CameraxFragment extends Fragment {
             }
         });
     }
+
+    /*@Override
+    public void onPause() {
+        super.onPause();
+        if(isWorking){
+            ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
+        }
+    }*/
 
     @Override
     public void onDestroy() {
@@ -133,28 +164,60 @@ public class CameraxFragment extends Fragment {
         Log.d("rotation",""+rotation);
         //preview
         preview = new Preview.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
+                .setTargetResolution(get_size(640, 480))
                 .setTargetRotation(rotation)
                 .build();
         //imageAnalysis
         imageAnalysis = new ImageAnalysis.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
+                .setTargetResolution(get_size(640, 480))
                 .setTargetRotation(rotation)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
         //TODO setAnalysis
+        imageAnalysis.setAnalyzer(cameraExecutor, new ImageAnalysis.Analyzer() {
+            @Override
+            public void analyze(@NonNull ImageProxy image) {
+                if(isWorking){
+                    if(image.getFormat()!= ImageFormat.YUV_420_888){
+                        Log.e(logtag,"Image Format NOT Support");
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(requireContext(),R.string.image_not_support,Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        isWorking=false;
+                        ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
+                        Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
+                        controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                        image.close();
+                    }
+                    else {
+                        String aa1=requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.TAIWAN,"test%d.jpg", count);
+                        Log.d(logtag,aa1);
+                        File tmp = new File(requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.TAIWAN,"test%d.jpg", count));
+                        count=count+1;
+                        talkerNode.start_stream(image,tmp);
+                    }
+                }
+                else {
+                    image.close();
+                }
+            }
+        });
         //imageCapture
         // .setTargetResolution(get_size(640, 480))
-        imageCapture = new ImageCapture.Builder()
+        /*imageCapture = new ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .setTargetAspectRatio(screenAspectRatio)
                 .setTargetRotation(rotation)
-                .build();
+                .build();*/
         //Select Camera
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build();
         //TODO bind imageAnalysis
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview,imageAnalysis);
         preview.setSurfaceProvider(previewView.createSurfaceProvider(camera.getCameraInfo()));
     }
 
@@ -202,5 +265,29 @@ public class CameraxFragment extends Fragment {
     private void updateCameraUi(){
         container.removeView(container.findViewById(R.id.camera_ui_container));
         controls=View.inflate(requireContext(), R.layout.canera_ui, container);
+        controls.findViewById(R.id.camera_stream_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isWorking= !isWorking;
+                if(isWorking){
+                    Log.e(logtag,"isWorking");
+                    ((MainActivity) requireActivity()).getExecutor().addNode(talkerNode);
+                    Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
+                    controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                }
+                else {
+                    Log.e(logtag,"not isWorking");
+                    ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
+                    Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
+                    controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                }
+            }
+        });
+        if(isWorking){
+            Log.e(logtag,"start isWorking");
+            ((MainActivity) requireActivity()).getExecutor().addNode(talkerNode);
+            Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
+            controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+        }
     }
 }
