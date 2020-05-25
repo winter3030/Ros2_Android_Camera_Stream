@@ -1,11 +1,18 @@
 package com.example.ros2videostream;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.Image;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.util.Log;
 
 import androidx.camera.core.ImageProxy;
@@ -36,15 +43,19 @@ public class Ros2Node extends BaseComposableNode {
     private sensor_msgs.msg.Image msg_image;
     private WallTimer timer;
     private int count=0;
+    private RenderScript rs;
+    private Allocation yuvAllocation;
+    private Allocation rgbAllocation;
+    private ScriptIntrinsicYuvToRGB scriptYuvToRgb;
 
-    public Ros2Node(final String name, final String topic,final int type) {
+    public Ros2Node(final String name, final String topic, final int type) {
         super(name);
         this.topic = topic;
         switch (type){
             case TEXTTYPE:
                 this.publishertext = this.node.createPublisher(std_msgs.msg.String.class, this.topic);
             case IMAGETYPE:
-                this.publisherimage = this.node.createPublisher(sensor_msgs.msg.Image.class, this.topic,QoSProfile.SENSOR_DATA);
+                this.publisherimage = this.node.createPublisher(sensor_msgs.msg.Image.class, this.topic,QoSProfile.DEFAULT);
                 msg_image=new sensor_msgs.msg.Image();
         }
     }
@@ -131,16 +142,28 @@ public class Ros2Node extends BaseComposableNode {
         Ubuffer.get(nv21, Wr+Hr+Yr, Ur);
         Vbuffer.get(nv21, Wr+Hr+Yr+Ur, Vr);*/
 
-        //YuvImage
-        YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, w, h, null);
+        //method1 YuvImage
+        /*YuvImage yuvImage = new YuvImage(nv21, ImageFormat.NV21, w, h, null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 80, out);
+        yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 90, out);
         byte[] imageBytes = out.toByteArray();
         //Bitmap
-        /*Bitmap img= BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        Bitmap img= BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        //img=rotate_bitmap(img,w,h,IRotation);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        img.compress(Bitmap.CompressFormat.JPEG, 70 , baos);
+        img.compress(Bitmap.CompressFormat.JPEG, 90 , baos);
         byte[] b = baos.toByteArray();*/
+
+        //method2 ScriptIntrinsicYuvToRGB
+        yuvAllocation.copyFrom(nv21);
+        scriptYuvToRgb.setInput(yuvAllocation);
+        scriptYuvToRgb.forEach(rgbAllocation);
+        Bitmap bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+        rgbAllocation.copyTo(bitmap);
+        bitmap=rotate_bitmap(bitmap,w,h,IRotation);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90 , baos);
+        byte[] b = baos.toByteArray();
         //write file
         /*try {
             FileOutputStream fOut=new FileOutputStream(tmp);
@@ -156,15 +179,39 @@ public class Ros2Node extends BaseComposableNode {
             e.printStackTrace();
         }*/
         List<Byte> img_list = new ArrayList<Byte>();
-        for (byte item : IRarray) {
-            img_list.add(item);
-        }
-        for (byte item : imageBytes) {
+        for (byte item : b) {
             img_list.add(item);
         }
         msg_image.setData(img_list);
         publisherimage.publish(msg_image);
         Log.d("===","===");
+        bitmap.recycle();
         image.close();
+    }
+
+    private Bitmap rotate_bitmap(Bitmap img,int w,int h,int rotate){
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotate);
+        return Bitmap.createBitmap(img, 0, 0, w, h, matrix, true);
+    }
+
+    //ScriptIntrinsicYuvToRGB
+    public void setup_script(Context context,int w,int h){
+        rs = RenderScript.create(context);
+        int len=(w*h)+(w*h/2-1)+(w*h/2-1);
+        Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs))
+                .setX(len);
+        Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs))
+                .setX(w)
+                .setY(h);
+        yuvAllocation = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+        rgbAllocation = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+        scriptYuvToRgb = ScriptIntrinsicYuvToRGB.create(rs, Element.YUV(rs));
+    }
+
+    public void release_script(){
+        yuvAllocation.destroy();
+        rgbAllocation.destroy();
+        rs.destroy();
     }
 }

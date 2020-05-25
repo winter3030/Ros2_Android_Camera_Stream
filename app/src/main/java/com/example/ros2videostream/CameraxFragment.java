@@ -96,6 +96,8 @@ public class CameraxFragment extends Fragment {
             talkerNode = new Ros2Node("android_talker_node", "chatter",2);
             Log.d("talkerNode","new talkerNode");
         }
+        //setup RenderScript
+        talkerNode.setup_script(getContext(),1920,1080);
         displayManager.registerDisplayListener(displayListener, null);
         previewView.post(new Runnable() {
             @Override
@@ -120,6 +122,7 @@ public class CameraxFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        talkerNode.release_script();
         cameraExecutor.shutdown();
         displayManager.unregisterDisplayListener(displayListener);
     }
@@ -164,12 +167,12 @@ public class CameraxFragment extends Fragment {
         Log.d("rotation",""+rotation);
         //preview
         preview = new Preview.Builder()
-                .setTargetResolution(get_size(640, 480))
+                .setTargetResolution(get_size(1920, 1080))
                 .setTargetRotation(rotation)
                 .build();
         //imageAnalysis
         imageAnalysis = new ImageAnalysis.Builder()
-                .setTargetResolution(get_size(640, 480))
+                .setTargetResolution(get_size(1920, 1080))
                 .setTargetRotation(rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
