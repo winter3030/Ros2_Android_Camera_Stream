@@ -63,12 +63,12 @@ public class MainFragment extends Fragment {
         inflater.inflate(R.menu.toolbar_menu, menu);
     }
 
-    /*@Override
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int menuItemId  = item.getItemId();
         if(menuItemId==R.id.menu1){
-            //TODO
+            ((MainActivity) requireActivity()).show_fragment_setting();
         }
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 }

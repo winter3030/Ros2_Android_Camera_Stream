@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.ros2videostream.ui.CameraxFragment;
 import com.example.ros2videostream.ui.MainFragment;
+import com.example.ros2videostream.ui.SettingFragment;
 import com.example.ros2videostream.ui.TextFragment;
 
 import org.ros2.android.activity.ROSActivity;
@@ -97,6 +98,13 @@ public class MainActivity extends ROSActivity {
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA},REQUEST_CODE_PERMISSIONS);
         }
 
+    }
+
+    public void show_fragment_setting(){
+        Log.d(logtag,"now show fragment_setting");
+        SettingFragment settingFragment =new SettingFragment();
+        settingFragment.setTargetFragment(mainFragment, 20);
+        manager.beginTransaction().addToBackStack("M_to_S").replace(R.id.fragment_container,settingFragment,"SFragment").commit();
     }
 
     private boolean checkpermission(){

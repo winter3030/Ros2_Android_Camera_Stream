@@ -8,4 +8,7 @@
     <string name="toolbar_menu">setting</string>
     <string name="camera_capture">camera capture</string>
     <string name="image_not_support">Error Image Format NOT Support\nNeed YUV_420_888</string>
+    <string name="ok">ok</string>
+    <string name="cancel">cancel</string>
+    <string name="toolbar_setting_title">設定</string>
 </resources>
