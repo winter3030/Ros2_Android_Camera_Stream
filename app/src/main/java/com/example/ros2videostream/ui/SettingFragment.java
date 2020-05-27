@@ -13,9 +13,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ros2videostream.R;
+import com.example.ros2videostream.setting.Setting;
+import com.example.ros2videostream.setting.SettingAdapter;
+import com.example.ros2videostream.viewmodel.SettingViewModel;
+
+import java.util.ArrayList;
 
 public class SettingFragment extends Fragment {
     private View view;
@@ -34,7 +41,6 @@ public class SettingFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         Toolbar toolbar =view.findViewById(R.id.toolbar_setting);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.toolbar_setting_title);
@@ -45,5 +51,16 @@ public class SettingFragment extends Fragment {
                 requireActivity().onBackPressed();
             }
         });
+        //關聯ViewModel
+        SettingViewModel settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
+        ArrayList<Setting> settinglist = settingViewModel.getSettinglist().getValue();
+        //新增recyclerview
+        RecyclerView recyclerView = view.findViewById(R.id.recycleview);
+        SettingAdapter settingAdapter = new SettingAdapter(requireContext(), settinglist, settingViewModel);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.setAdapter(settingAdapter);
+        /*Log.e("SgroupA", settingViewModel.getGroupA().getValue().getSettingcontent());
+        Log.e("SgroupB", settingViewModel.getGroupB().getValue().getSettingcontent());
+        Log.e("SgroupC", settingViewModel.getGroupC().getValue().getSettingcontent());*/
     }
 }

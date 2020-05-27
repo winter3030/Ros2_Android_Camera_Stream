@@ -15,14 +15,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ros2videostream.MainActivity;
 import com.example.ros2videostream.R;
+import com.example.ros2videostream.viewmodel.SettingViewModel;
 
 public class MainFragment extends Fragment {
     private View view;
-    private Button text;
-    private Button camera;
 
     @Nullable
     @Override
@@ -42,20 +42,24 @@ public class MainFragment extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.toolbar_title);
         setHasOptionsMenu(true);
-        text=view.findViewById(R.id.text);
+        Button text = view.findViewById(R.id.text);
         text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ((MainActivity) requireActivity()).show_fragment_text();
             }
         });
-        camera=view.findViewById(R.id.camera);
+        Button camera = view.findViewById(R.id.camera);
         camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ((MainActivity) requireActivity()).show_fragment_camerax();
             }
         });
+        SettingViewModel settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
+        Log.d("MgroupA", settingViewModel.getGroupA().getValue().getSettingcontent());
+        Log.d("MgroupB", settingViewModel.getGroupB().getValue().getSettingcontent());
+        Log.d("MgroupC", settingViewModel.getGroupC().getValue().getSettingcontent());
     }
 
     @Override
