@@ -1,7 +1,6 @@
 package com.example.ros2videostream;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -13,6 +12,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.example.ros2videostream.ui.CameraxFragment;
+import com.example.ros2videostream.ui.MainFragment;
+import com.example.ros2videostream.ui.TextFragment;
 
 import org.ros2.android.activity.ROSActivity;
 import org.ros2.rcljava.RCLJava;
@@ -68,7 +71,7 @@ public class MainActivity extends ROSActivity {
         container.postDelayed(new Runnable() {
             @Override
             public void run() {
-                container.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+                container.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
             }
         },500L);
     }

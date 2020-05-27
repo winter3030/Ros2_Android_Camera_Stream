@@ -1,4 +1,4 @@
-package com.example.ros2videostream;
+package com.example.ros2videostream.ui;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -32,6 +32,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.example.ros2videostream.MainActivity;
+import com.example.ros2videostream.R;
+import com.example.ros2videostream.ros2.Ros2Node;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
