@@ -31,13 +31,18 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ros2videostream.MainActivity;
 import com.example.ros2videostream.R;
 import com.example.ros2videostream.ros2.Ros2Node;
+import com.example.ros2videostream.setting.MapItem;
+import com.example.ros2videostream.viewmodel.SettingViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -56,15 +61,20 @@ public class CameraxFragment extends Fragment {
     private int displayid=-1;
     private Preview preview;
     private ImageAnalysis imageAnalysis;
-    private ImageCapture imageCapture;
+    //private ImageCapture imageCapture;
     private ConstraintLayout container;
     private View controls;
-    private String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
+    //private String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private ExecutorService cameraExecutor;
     private Handler handler;
     private Ros2Node talkerNode;
     private boolean isWorking=false;
     private int count=1;
+    private SettingViewModel settingViewModel;
+    private int width;
+    private int height;
+    private String imageformat;
+    private String qosfile;
 
     @Nullable
     @Override
@@ -88,6 +98,10 @@ public class CameraxFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         container=view.findViewById(R.id.container);
         previewView=view.findViewById(R.id.view_finder);
+        //ViewModel
+        settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
+        //setting
+        load_setting();
         //background executor
         cameraExecutor= Executors.newSingleThreadExecutor();
         handler = new Handler();
@@ -96,11 +110,12 @@ public class CameraxFragment extends Fragment {
             isWorking = savedInstanceState.getBoolean("isWorking");
         }
         if(talkerNode==null){
-            talkerNode = new Ros2Node("android_talker_node", "chatter",2);
+            talkerNode = new Ros2Node("android_talker_node", "chatter",2,qosfile);
             Log.d("talkerNode","new talkerNode");
         }
         //setup RenderScript
-        talkerNode.setup_script(getContext(),1920,1080);
+        talkerNode.setup_script(getContext(),width,height);
+        talkerNode.setup_imageformat(imageformat);
         displayManager.registerDisplayListener(displayListener, null);
         previewView.post(new Runnable() {
             @Override
@@ -170,12 +185,12 @@ public class CameraxFragment extends Fragment {
         Log.d("rotation",""+rotation);
         //preview
         preview = new Preview.Builder()
-                .setTargetResolution(get_size(1920, 1080))
+                .setTargetResolution(get_size(width, height))
                 .setTargetRotation(rotation)
                 .build();
         //imageAnalysis
         imageAnalysis = new ImageAnalysis.Builder()
-                .setTargetResolution(get_size(1920, 1080))
+                .setTargetResolution(get_size(width, height))
                 .setTargetRotation(rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
@@ -194,8 +209,9 @@ public class CameraxFragment extends Fragment {
                         });
                         isWorking=false;
                         ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
-                        Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
-                        controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                        //Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
+                        //controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                        controls.findViewById(R.id.camera_stream_button).setSelected(false);
                         image.close();
                     }
                     else {
@@ -260,9 +276,9 @@ public class CameraxFragment extends Fragment {
                         //CameraxFragment_view.gerdisplay.getre
                         imageAnalysis.setTargetRotation(getView().getDisplay().getRotation());
                     }
-                    if(imageCapture!=null){
+                    /*if(imageCapture!=null){
                         imageCapture.setTargetRotation(getView().getDisplay().getRotation());
-                    }
+                    }*/
                 }
             }
         }
@@ -278,22 +294,60 @@ public class CameraxFragment extends Fragment {
                 if(isWorking){
                     Log.e(logtag,"isWorking");
                     ((MainActivity) requireActivity()).getExecutor().addNode(talkerNode);
-                    Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
-                    controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                    //Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
+                    //controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                    controls.findViewById(R.id.camera_stream_button).setSelected(true);
                 }
                 else {
                     Log.e(logtag,"not isWorking");
                     ((MainActivity) requireActivity()).getExecutor().removeNode(talkerNode);
-                    Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
-                    controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                    //Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_start);
+                    //controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+                    controls.findViewById(R.id.camera_stream_button).setSelected(false);
                 }
             }
         });
         if(isWorking){
             Log.e(logtag,"start isWorking");
             ((MainActivity) requireActivity()).getExecutor().addNode(talkerNode);
-            Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
-            controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+            //Drawable drawable=ContextCompat.getDrawable(requireContext(),R.drawable.ic_capture_stop);
+            //controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
+            controls.findViewById(R.id.camera_stream_button).setSelected(true);
+        }
+    }
+
+    private void load_setting(){
+        MapItem mapItem;
+        mapItem=settingViewModel.getGroupA().getValue();
+        if(mapItem!=null){
+            width=getresolution(mapItem.getSettingcontent()).get(0);
+            height=getresolution(mapItem.getSettingcontent()).get(1);
+        }
+        mapItem=settingViewModel.getGroupB().getValue();
+        if(mapItem!=null){
+            imageformat=mapItem.getSettingcontent();
+        }
+        mapItem=settingViewModel.getGroupC().getValue();
+        if(mapItem!=null){
+            qosfile=mapItem.getSettingcontent();
+        }
+    }
+
+    private List<Integer> getresolution(String type){
+        List<Integer> resolutionlist=new ArrayList<>();
+        switch (type){
+            default:
+                resolutionlist.add(640);
+                resolutionlist.add(480);
+                return resolutionlist;
+            case "HD":
+                resolutionlist.add(1280);
+                resolutionlist.add(720);
+                return resolutionlist;
+            case "FullHD":
+                resolutionlist.add(1920);
+                resolutionlist.add(1080);
+                return resolutionlist;
         }
     }
 }

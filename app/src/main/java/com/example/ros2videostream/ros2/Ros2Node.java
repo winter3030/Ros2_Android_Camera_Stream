@@ -38,16 +38,34 @@ public class Ros2Node extends BaseComposableNode {
     private Allocation yuvAllocation;
     private Allocation rgbAllocation;
     private ScriptIntrinsicYuvToRGB scriptYuvToRgb;
+    private QoSProfile qoSProfile;
+    private Bitmap.CompressFormat compressFormat;
 
-    public Ros2Node(final String name, final String topic, final int type) {
+    public Ros2Node(final String name, final String topic, final int type,final String QOSfile) {
         super(name);
         this.topic = topic;
+        switch (QOSfile){
+            case "Default":
+                qoSProfile=QoSProfile.DEFAULT;
+                break;
+            case "Services":
+                qoSProfile=QoSProfile.SERVICES_DEFAULT;
+                break;
+            case "Parameters":
+                qoSProfile=QoSProfile.PARAMETERS;
+                break;
+            case "Sensor":
+                qoSProfile=QoSProfile.SENSOR_DATA;
+                break;
+        }
         switch (type){
             case TEXTTYPE:
-                this.publishertext = this.node.createPublisher(std_msgs.msg.String.class, this.topic);
+                this.publishertext = this.node.createPublisher(std_msgs.msg.String.class, this.topic,qoSProfile);
+                break;
             case IMAGETYPE:
-                this.publisherimage = this.node.createPublisher(sensor_msgs.msg.Image.class, this.topic,QoSProfile.DEFAULT);
+                this.publisherimage = this.node.createPublisher(sensor_msgs.msg.Image.class, this.topic,qoSProfile);
                 msg_image=new sensor_msgs.msg.Image();
+                break;
         }
     }
 
@@ -81,13 +99,13 @@ public class Ros2Node extends BaseComposableNode {
         //image Rotation
         int IRotation=image.getImageInfo().getRotationDegrees();
         //image Rotation buffer
-        ByteBuffer IRbuffer=ByteBuffer.allocate(4).putInt(IRotation);
+        //ByteBuffer IRbuffer=ByteBuffer.allocate(4).putInt(IRotation);
         //YUV buffer
         ByteBuffer Ybuffer=image.getPlanes()[0].getBuffer();
         ByteBuffer Ubuffer=image.getPlanes()[1].getBuffer();
         ByteBuffer Vbuffer=image.getPlanes()[2].getBuffer();
         //buffer remaining
-        int Wr=IRbuffer.rewind().remaining();
+        //int Wr=IRbuffer.rewind().remaining();
         int Yr=Ybuffer.remaining();
         int Ur=Ubuffer.remaining();
         int Vr=Vbuffer.remaining();
@@ -124,7 +142,7 @@ public class Ros2Node extends BaseComposableNode {
         Vbuffer.get(nv21, Yr, Vr);
         Ubuffer.get(nv21, Yr + Vr, Ur);
         //buffer->array
-        byte[] IRarray=IRbuffer.array();
+        //byte[] IRarray=IRbuffer.array();
         //test
         /*byte[] nv21 = new byte[Wr+Hr+Yr + Ur + Vr];
         Wbuffer.get(nv21,0,Wr);
@@ -153,7 +171,7 @@ public class Ros2Node extends BaseComposableNode {
         rgbAllocation.copyTo(bitmap);
         bitmap=rotate_bitmap(bitmap,w,h,IRotation);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90 , baos);
+        bitmap.compress(compressFormat, 70 , baos);
         byte[] b = baos.toByteArray();
         //write file
         /*try {
@@ -204,5 +222,16 @@ public class Ros2Node extends BaseComposableNode {
         yuvAllocation.destroy();
         rgbAllocation.destroy();
         rs.destroy();
+    }
+
+    public void setup_imageformat(String imageformat){
+        switch (imageformat){
+            case "PNG":
+                compressFormat=Bitmap.CompressFormat.PNG;
+                break;
+            case "JPG":
+                compressFormat=Bitmap.CompressFormat.JPEG;
+                break;
+        }
     }
 }

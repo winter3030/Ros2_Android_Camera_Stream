@@ -12,7 +12,7 @@
         android:layout_height="92dp"
         android:layout_marginBottom="80dp"
         android:scaleType="fitCenter"
-        android:background="@drawable/ic_capture_start"
+        android:background="@drawable/ic_capture"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

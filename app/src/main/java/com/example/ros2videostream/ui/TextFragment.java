@@ -13,10 +13,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.ros2videostream.MainActivity;
 import com.example.ros2videostream.R;
 import com.example.ros2videostream.ros2.Ros2Node;
+import com.example.ros2videostream.setting.MapItem;
+import com.example.ros2videostream.viewmodel.SettingViewModel;
 
 public class TextFragment extends Fragment {
     private static String logtag = TextFragment.class.getName();
@@ -25,6 +28,7 @@ public class TextFragment extends Fragment {
     private Button start;
     private Button stop;
     private boolean isWorking;
+    private String qosfile;
 
     /*@Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,8 +70,15 @@ public class TextFragment extends Fragment {
             Log.d("savedInstanceState","load isWorking");
             isWorking = savedInstanceState.getBoolean("isWorking");
         }
+        //ViewModel
+        SettingViewModel settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
+
+        MapItem mapItem=settingViewModel.getGroupC().getValue();
+        if(mapItem!=null){
+            qosfile=mapItem.getSettingcontent();
+        }
         if(talkerNode==null){
-            talkerNode = new Ros2Node("android_talker_node", "chatter",1);
+            talkerNode = new Ros2Node("android_talker_node", "chatter",1,qosfile);
             Log.d("talkerNode","new talkerNode");
         }
         start=view.findViewById(R.id.start);
