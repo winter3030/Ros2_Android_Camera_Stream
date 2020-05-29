@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -69,7 +70,7 @@ public class CameraxFragment extends Fragment {
     private Handler handler;
     private Ros2Node talkerNode;
     private boolean isWorking=false;
-    private int count=1;
+    //private int count=1;
     private SettingViewModel settingViewModel;
     private int width;
     private int height;
@@ -215,11 +216,11 @@ public class CameraxFragment extends Fragment {
                         image.close();
                     }
                     else {
-                        String aa1=requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.TAIWAN,"test%d.jpg", count);
-                        Log.d(logtag,aa1);
-                        File tmp = new File(requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.TAIWAN,"test%d.jpg", count));
-                        count=count+1;
-                        talkerNode.start_stream(image,tmp);
+                        //String aa1=requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.ENGLISH,"test%d.jpg", count);
+                        //Log.d(logtag,aa1);
+                        //File tmp = new File(requireContext().getExternalMediaDirs()[0]+"/Picture/"+ String.format(Locale.ENGLISH,"test%d.jpg", count));
+                        //count=count+1;
+                        talkerNode.start_stream(image);
                     }
                 }
                 else {
@@ -314,6 +315,15 @@ public class CameraxFragment extends Fragment {
             //controls.findViewById(R.id.camera_stream_button).setBackground(drawable);
             controls.findViewById(R.id.camera_stream_button).setSelected(true);
         }
+        TextView settingbar=controls.findViewById(R.id.textView_setting);
+        String text=String.format(Locale.ENGLISH,"%dX%d  %s  %s",width,height,imageformat,qosfile);
+        settingbar.setText(text);
+        controls.findViewById(R.id.camera_back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().onBackPressed();
+            }
+        });
     }
 
     private void load_setting(){

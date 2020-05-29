@@ -18,7 +18,6 @@ import org.ros2.rcljava.qos.QoSProfile;
 import org.ros2.rcljava.timer.WallTimer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +91,7 @@ public class Ros2Node extends BaseComposableNode {
         publishertext.publish(msg_text);
     }
 
-    public void start_stream(ImageProxy image, File tmp){
+    public void start_stream(ImageProxy image){
         //image Width and Height
         int w = image.getWidth();
         int h = image.getHeight();
@@ -187,7 +186,7 @@ public class Ros2Node extends BaseComposableNode {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }*/
-        List<Byte> img_list = new ArrayList<Byte>();
+        List<Byte> img_list = new ArrayList<>();
         for (byte item : b) {
             img_list.add(item);
         }
