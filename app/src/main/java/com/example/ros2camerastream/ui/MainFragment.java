@@ -1,4 +1,4 @@
-package com.example.ros2videostream.ui;
+package com.example.ros2camerastream.ui;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -17,9 +17,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.ros2videostream.MainActivity;
-import com.example.ros2videostream.R;
-import com.example.ros2videostream.viewmodel.SettingViewModel;
+import com.example.ros2camerastream.MainActivity;
+import com.example.ros2camerastream.R;
+import com.example.ros2camerastream.setting.MapItem;
+import com.example.ros2camerastream.viewmodel.SettingViewModel;
+
+import java.util.List;
 
 public class MainFragment extends Fragment {
     private View view;
@@ -57,9 +60,12 @@ public class MainFragment extends Fragment {
             }
         });
         SettingViewModel settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
-        Log.d("MgroupA", settingViewModel.getGroupA().getValue().getSettingcontent());
-        Log.d("MgroupB", settingViewModel.getGroupB().getValue().getSettingcontent());
-        Log.d("MgroupC", settingViewModel.getGroupC().getValue().getSettingcontent());
+        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
+        if(settinggroup!=null){
+            Log.d("MgroupA", settinggroup.get(0).getSettingcontent());
+            Log.d("MgroupB", settinggroup.get(1).getSettingcontent());
+            Log.d("MgroupC", settinggroup.get(2).getSettingcontent());
+        }
     }
 
     @Override

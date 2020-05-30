@@ -1,9 +1,8 @@
-package com.example.ros2videostream.ui;
+package com.example.ros2camerastream.ui;
 
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
-import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +22,6 @@ import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -34,14 +32,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.ros2videostream.MainActivity;
-import com.example.ros2videostream.R;
-import com.example.ros2videostream.ros2.Ros2Node;
-import com.example.ros2videostream.setting.MapItem;
-import com.example.ros2videostream.viewmodel.SettingViewModel;
+import com.example.ros2camerastream.MainActivity;
+import com.example.ros2camerastream.R;
+import com.example.ros2camerastream.ros2.Ros2Node;
+import com.example.ros2camerastream.setting.MapItem;
+import com.example.ros2camerastream.viewmodel.SettingViewModel;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -328,18 +325,21 @@ public class CameraxFragment extends Fragment {
 
     private void load_setting(){
         MapItem mapItem;
-        mapItem=settingViewModel.getGroupA().getValue();
-        if(mapItem!=null){
-            width=getresolution(mapItem.getSettingcontent()).get(0);
-            height=getresolution(mapItem.getSettingcontent()).get(1);
-        }
-        mapItem=settingViewModel.getGroupB().getValue();
-        if(mapItem!=null){
-            imageformat=mapItem.getSettingcontent();
-        }
-        mapItem=settingViewModel.getGroupC().getValue();
-        if(mapItem!=null){
-            qosfile=mapItem.getSettingcontent();
+        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
+        if(settinggroup!=null){
+            mapItem=settinggroup.get(0);
+            if(mapItem!=null){
+                width=getresolution(mapItem.getSettingcontent()).get(0);
+                height=getresolution(mapItem.getSettingcontent()).get(1);
+            }
+            mapItem=settinggroup.get(1);
+            if(mapItem!=null){
+                imageformat=mapItem.getSettingcontent();
+            }
+            mapItem=settinggroup.get(2);
+            if(mapItem!=null){
+                qosfile=mapItem.getSettingcontent();
+            }
         }
     }
 

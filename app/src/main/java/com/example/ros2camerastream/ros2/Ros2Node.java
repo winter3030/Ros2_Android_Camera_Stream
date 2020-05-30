@@ -1,4 +1,4 @@
-package com.example.ros2videostream.ros2;
+package com.example.ros2camerastream.ros2;
 
 import android.content.Context;
 import android.graphics.Bitmap;

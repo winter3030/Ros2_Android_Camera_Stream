@@ -1,4 +1,4 @@
-package com.example.ros2videostream;
+package com.example.ros2camerastream;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -13,10 +13,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.example.ros2videostream.ui.CameraxFragment;
-import com.example.ros2videostream.ui.MainFragment;
-import com.example.ros2videostream.ui.SettingFragment;
-import com.example.ros2videostream.ui.TextFragment;
+import com.example.ros2camerastream.ui.CameraxFragment;
+import com.example.ros2camerastream.ui.MainFragment;
+import com.example.ros2camerastream.ui.SettingFragment;
+import com.example.ros2camerastream.ui.TextFragment;
 
 import org.ros2.android.activity.ROSActivity;
 import org.ros2.rcljava.RCLJava;

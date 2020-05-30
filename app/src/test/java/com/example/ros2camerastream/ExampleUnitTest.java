@@ -1,4 +1,4 @@
-package com.example.ros2videostream;
+package com.example.ros2camerastream;
 
 import org.junit.Test;
 

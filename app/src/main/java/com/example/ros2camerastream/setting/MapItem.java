@@ -1,4 +1,4 @@
-package com.example.ros2videostream.setting;
+package com.example.ros2camerastream.setting;
 
 public class MapItem {
     private int position;

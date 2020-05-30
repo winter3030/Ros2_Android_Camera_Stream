@@ -1,7 +1,5 @@
-package com.example.ros2videostream.ui;
+package com.example.ros2camerastream.ui;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,10 +15,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ros2videostream.R;
-import com.example.ros2videostream.setting.Setting;
-import com.example.ros2videostream.setting.SettingAdapter;
-import com.example.ros2videostream.viewmodel.SettingViewModel;
+import com.example.ros2camerastream.R;
+import com.example.ros2camerastream.setting.Setting;
+import com.example.ros2camerastream.setting.SettingAdapter;
+import com.example.ros2camerastream.viewmodel.SettingViewModel;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.example.ros2videostream.setting;
+package com.example.ros2camerastream.setting;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,11 +10,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ros2videostream.R;
-import com.example.ros2videostream.viewmodel.SettingViewModel;
+import com.example.ros2camerastream.R;
+import com.example.ros2camerastream.viewmodel.SettingViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class SettingAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private static final int TYPE_TITLE=1;
@@ -28,10 +29,13 @@ public class SettingAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.context=context;
         this.settinglist=settinglist;
         this.settingViewModel=settingViewModel;
+        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
         checkmap=new HashMap<>();
-        checkmap.put("groupA",settingViewModel.getGroupA().getValue());
-        checkmap.put("groupB",settingViewModel.getGroupB().getValue());
-        checkmap.put("groupC",settingViewModel.getGroupC().getValue());
+        if(settinggroup!=null){
+            checkmap.put("groupA",settinggroup.get(0));
+            checkmap.put("groupB",settinggroup.get(1));
+            checkmap.put("groupC",settinggroup.get(2));
+        }
     }
 
     //建立ViewHolder
@@ -96,7 +100,11 @@ public class SettingAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         setting.setIscheck(true);
                         item=new MapItem(position,setting.getSettingcontent());
                         checkmap.put("groupA",item);
-                        settingViewModel.getGroupA().setValue(item);
+                        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
+                        if(settinggroup!=null){
+                            settinggroup.get(0).setPosition(position);
+                            settinggroup.get(0).setSettingcontent(setting.getSettingcontent());
+                        }
                     }
                     else if(position>4 && position<7){
                         //groupB
@@ -111,7 +119,11 @@ public class SettingAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         setting.setIscheck(true);
                         item=new MapItem(position,setting.getSettingcontent());
                         checkmap.put("groupB",item);
-                        settingViewModel.getGroupB().setValue(item);
+                        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
+                        if(settinggroup!=null){
+                            settinggroup.get(1).setPosition(position);
+                            settinggroup.get(1).setSettingcontent(setting.getSettingcontent());
+                        }
                     }
                     else {
                         //groupC
@@ -125,7 +137,11 @@ public class SettingAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         setting.setIscheck(true);
                         item=new MapItem(position,setting.getSettingcontent());
                         checkmap.put("groupC",item);
-                        settingViewModel.getGroupC().setValue(item);
+                        List<MapItem> settinggroup=settingViewModel.getSettinggroup().getValue();
+                        if(settinggroup!=null){
+                            settinggroup.get(2).setPosition(position);
+                            settinggroup.get(2).setSettingcontent(setting.getSettingcontent());
+                        }
                     }
                 }
             });
