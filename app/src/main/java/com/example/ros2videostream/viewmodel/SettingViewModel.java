@@ -33,7 +33,7 @@ public class SettingViewModel extends AndroidViewModel {
         }
         if (groupB == null) {
             groupB = new MutableLiveData<MapItem>();
-            groupB.setValue(new MapItem(5,"PNG"));
+            groupB.setValue(new MapItem(6,"JPG"));
         }
         if (groupC == null) {
             groupC = new MutableLiveData<MapItem>();

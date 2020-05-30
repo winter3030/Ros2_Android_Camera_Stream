@@ -91,23 +91,27 @@ public class Ros2Node extends BaseComposableNode {
         publishertext.publish(msg_text);
     }
 
+    //Compressed image
     public void start_stream(ImageProxy image){
         //image Width and Height
         int w = image.getWidth();
         int h = image.getHeight();
         //image Rotation
         int IRotation=image.getImageInfo().getRotationDegrees();
+
         //image Rotation buffer
         //ByteBuffer IRbuffer=ByteBuffer.allocate(4).putInt(IRotation);
         //YUV buffer
         ByteBuffer Ybuffer=image.getPlanes()[0].getBuffer();
         ByteBuffer Ubuffer=image.getPlanes()[1].getBuffer();
         ByteBuffer Vbuffer=image.getPlanes()[2].getBuffer();
+
         //buffer remaining
         //int Wr=IRbuffer.rewind().remaining();
         int Yr=Ybuffer.remaining();
         int Ur=Ubuffer.remaining();
         int Vr=Vbuffer.remaining();
+
         //Log
         /*byte[] aa=IRbuffer.array();
         for (byte b : aa) {
@@ -124,7 +128,8 @@ public class Ros2Node extends BaseComposableNode {
         Log.d("Ybuffer",String.valueOf(Yr));
         Log.d("Ubuffer",String.valueOf(Ur));
         Log.d("Vbuffer",String.valueOf(Vr));*/
-        //Image format YUV_420 Semiplanar
+
+        //Image format YUV_420 Semiplanar NV12
         //Y Y Y Y
         //Y Y Y Y
         //Y Y Y Y
@@ -133,13 +138,25 @@ public class Ros2Node extends BaseComposableNode {
         //U V U V <== U & V交叉儲存
         //Flatten
         //Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y U V U V U V U V
+
+        //Image format YUV_420 Semiplanar NV21
+        //Y Y Y Y
+        //Y Y Y Y
+        //Y Y Y Y
+        //Y Y Y Y
+        //V U V U
+        //V U V U <== U & V交叉儲存
+        //Flatten
+        //Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y V U V U V U V U
+
         //buffer->array
         byte[] nv21 = new byte[Yr + Ur + Vr];
         //Copy the buffer into a byte array
-        //U and V are swapped
+        //U and V are swapped V在前面
         Ybuffer.get(nv21, 0, Yr);
         Vbuffer.get(nv21, Yr, Vr);
         Ubuffer.get(nv21, Yr + Vr, Ur);
+
         //buffer->array
         //byte[] IRarray=IRbuffer.array();
         //test
@@ -192,10 +209,47 @@ public class Ros2Node extends BaseComposableNode {
         }
         msg_image.setData(img_list);
         publisherimage.publish(msg_image);
-        Log.d("===","===");
+        //Log.d("===","===");
         bitmap.recycle();
         image.close();
     }
+
+    //Uncompressed image => very slow
+    public void start_stream_yuv(ImageProxy image) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+
+        //buffer
+        ByteBuffer Wbuffer=ByteBuffer.allocate(4).putInt(w);
+        ByteBuffer Hbuffer=ByteBuffer.allocate(4).putInt(h);
+        ByteBuffer Ybuffer=image.getPlanes()[0].getBuffer();
+        ByteBuffer Vbuffer=image.getPlanes()[2].getBuffer();
+
+        //buffer size
+        int Wr=Wbuffer.rewind().remaining();
+        int Hr=Hbuffer.rewind().remaining();
+        int Yr=Ybuffer.remaining();
+        int Vr=Vbuffer.remaining();
+
+        //buffer into a byte array
+        byte[] nv21 = new byte[Wr + Hr + Yr + Vr];
+        Wbuffer.get(nv21, 0, Wr);
+        Hbuffer.get(nv21, Wr, Hr);
+        Ybuffer.get(nv21, Wr + Hr, Yr);
+        Vbuffer.get(nv21, Wr + Hr +Yr, Vr);
+
+        List<Byte> img_list = new ArrayList<>();
+        for (byte item : nv21) {
+            img_list.add(item);
+        }
+        img_list.add(nv21[0]);//307200+153599+1
+        msg_image.setData(img_list);
+        publisherimage.publish(msg_image);
+
+        //Log.d("===","===");
+        image.close();
+    }
+
 
     private Bitmap rotate_bitmap(Bitmap img,int w,int h,int rotate){
         Matrix matrix = new Matrix();
