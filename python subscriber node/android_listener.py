@@ -8,17 +8,19 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 import numpy as np
 import cv2
-import argparse
 import time
 
 class ListenerQos(Node):
-    def __init__(self, qos_profile):
+    def __init__(self, qos_profile,msgtype):
         super().__init__('listener')
         if qos_profile.reliability is QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE:
             self.get_logger().info('QoS傳輸模式[Reliable listener]')
         else:
             self.get_logger().info('QoS傳輸模式[Sensor data/Best effort listener]')
-        self.sub = self.create_subscription(Image, 'chatter', self.chatter_callback, qos_profile=qos_profile)
+        if msgtype == "text":
+            self.sub = self.create_subscription(String, 'chatter', self.chatter_callback_text, qos_profile=qos_profile)
+        else:
+            self.sub = self.create_subscription(Image, 'chatter', self.chatter_callback, qos_profile=qos_profile)
         #self.check=0
         self.i=1
         self.start_time = time.time()
@@ -50,6 +52,10 @@ class ListenerQos(Node):
         #cv2.imwrite('/home/skyline/output_{:04}.png'.format(self.i), img, [cv2.IMWRITE_JPEG_QUALITY, 70])
         cv2.imshow('Ros2 Stream',img)
         cv2.waitKey(1)
+        
+    def chatter_callback_text(self, msg):
+        self.get_logger().info('I heard: [%s]' % msg.data)
+        
     #def get_isend(self):
         #return self.check
 
@@ -57,6 +63,7 @@ def main(args=None):
     #cv2.namedWindow('Ros2 Stream', cv2.WINDOW_NORMAL)
     parser = argparse.ArgumentParser(description="Ros2 Listener")
     parser.add_argument("--qos", default="default", help="Setting ROS 2 Quality of Service policies (default, services, parameters, sensor) .")
+    parser.add_argument("--msg", default="camera", help="Setting ROS 2 message (camera, text) .")
     args = parser.parse_args()
     print(args.qos)
     rclpy.init(args=None)
@@ -75,7 +82,7 @@ def main(args=None):
     else:
         custom_qos_profile=qos_profile_default
         
-    node = ListenerQos(custom_qos_profile)
+    node = ListenerQos(custom_qos_profile,args.msg)
     
     while rclpy.ok():
         #if(node.get_isend()==1):
